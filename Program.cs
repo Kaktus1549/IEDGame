@@ -1,143 +1,360 @@
-﻿using System.Text;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using Spectre.Console;
 using Spectre.Console.Rendering;
-using System.Diagnostics;
 
-public class SpectreUI
-{    
-    private static int _decentralizationTime = 900; // Time in seconds for decentralization
-    private static string _exploded = "CiDilojilojilpPilpPilojilojilojilojilogg4paT4paI4paI4paI4paI4paI4paEICAgIOKWk+KWiOKWiOKWiOKWiOKWiOKWhCDilpPilojilojilojilojilojiloTiloTiloTilojilojilojilojilojilpMg4paS4paI4paI4paI4paI4paIICAg4paI4paI4paI4paEICAgIOKWiCAg4paE4paE4paEICAgICDiloTiloTiloTilojilojilojilojilojilpPilpPilojilojilojilojilogg4paT4paI4paI4paI4paI4paI4paEIArilpPilojilojilpLilpPiloggICDiloAg4paS4paI4paI4paAIOKWiOKWiOKWjCAgIOKWkuKWiOKWiOKWgCDilojilojilozilpPiloggICDiloDilpMgIOKWiOKWiOKWkiDilpPilpLilpLilojilojilpIgIOKWiOKWiOKWkiDilojilogg4paA4paIICAg4paIIOKWkuKWiOKWiOKWiOKWiOKWhCAgIOKWkyAg4paI4paI4paSIOKWk+KWkuKWk+KWiCAgIOKWgCDilpLilojilojiloAg4paI4paI4paMCuKWkuKWiOKWiOKWkuKWkuKWiOKWiOKWiCAgIOKWkeKWiOKWiCAgIOKWiOKWjCAgIOKWkeKWiOKWiCAgIOKWiOKWjOKWkuKWiOKWiOKWiCAg4paSIOKWk+KWiOKWiOKWkSDilpLilpHilpLilojilojilpEgIOKWiOKWiOKWkuKWk+KWiOKWiCAg4paA4paIIOKWiOKWiOKWkuKWkuKWiOKWiCAg4paA4paI4paEIOKWkiDilpPilojilojilpEg4paS4paR4paS4paI4paI4paIICAg4paR4paI4paIICAg4paI4paMCuKWkeKWiOKWiOKWkeKWkuKWk+KWiCAg4paEIOKWkeKWk+KWiOKWhCAgIOKWjCAgIOKWkeKWk+KWiOKWhCAgIOKWjOKWkuKWk+KWiCAg4paE4paRIOKWk+KWiOKWiOKWkyDilpEg4paS4paI4paIICAg4paI4paI4paR4paT4paI4paI4paSICDilpDilozilojilojilpLilpHilojilojiloTiloTiloTiloTilojilojilpEg4paT4paI4paI4paTIOKWkSDilpLilpPiloggIOKWhCDilpHilpPilojiloQgICDilowK4paR4paI4paI4paR4paR4paS4paI4paI4paI4paI4paS4paR4paS4paI4paI4paI4paI4paTICAgIOKWkeKWkuKWiOKWiOKWiOKWiOKWkyDilpHilpLilojilojilojilojilpIg4paS4paI4paI4paSIOKWkSDilpEg4paI4paI4paI4paI4paT4paS4paR4paS4paI4paI4paRICAg4paT4paI4paI4paRIOKWk+KWiCAgIOKWk+KWiOKWiOKWkiDilpLilojilojilpIg4paRIOKWkeKWkuKWiOKWiOKWiOKWiOKWkuKWkeKWkuKWiOKWiOKWiOKWiOKWkyAK4paR4paTICDilpHilpEg4paS4paRIOKWkSDilpLilpLilpMgIOKWkiAgICAg4paS4paS4paTICDilpIg4paR4paRIOKWkuKWkSDilpEg4paSIOKWkeKWkSAgIOKWkSDilpLilpHilpLilpHilpLilpEg4paRIOKWkuKWkSAgIOKWkiDilpIgIOKWkuKWkiAgIOKWk+KWkuKWiOKWkSDilpIg4paR4paRICAg4paR4paRIOKWkuKWkSDilpEg4paS4paS4paTICDilpIgCiDilpIg4paRIOKWkSDilpEgIOKWkSDilpEg4paSICDilpIgICAgIOKWkSDilpIgIOKWkiAg4paRIOKWkSAg4paRICAg4paRICAgICAg4paRIOKWkiDilpLilpEg4paRIOKWkeKWkSAgIOKWkSDilpLilpEgIOKWkiAgIOKWkuKWkiDilpEgICDilpEgICAgIOKWkSDilpEgIOKWkSDilpEg4paSICDilpIgCiDilpIg4paRICAg4paRICAgIOKWkSDilpEgIOKWkSAgICAg4paRIOKWkSAg4paRICAgIOKWkSAgICDilpEgICAgICDilpEg4paRIOKWkSDilpIgICAgIOKWkSAgIOKWkSDilpEgICDilpEgICDilpIgICAg4paRICAgICAgICAg4paRICAgIOKWkSDilpEgIOKWkSAKIOKWkSAgICAg4paRICDilpEgICDilpEgICAgICAgICAg4paRICAgICAgIOKWkSAg4paRICAgICAgICAgICAg4paRIOKWkSAgICAgICAgICAg4paRICAgICAgIOKWkSAg4paRICAgICAgICAgICDilpEgIOKWkSAgIOKWkSAgICAKICAgICAgICAgICAg4paRICAgICAgICAgIOKWkSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilpEgICAgICAK";
-    private static string _saved = "CuKWiOKWiOKVlyAgIOKWiOKWiOKVlyDilojilojilojilojilojilojilZcg4paI4paI4pWXICAg4paI4paI4pWXICAgIOKWiOKWiOKWiOKWiOKWiOKWiOKWiOKVlyDilojilojilojilojilojilZcg4paI4paI4pWXICAg4paI4paI4pWX4paI4paI4paI4paI4paI4paI4paI4pWX4paI4paI4paI4paI4paI4paI4pWXICAgICDilojilojilZfilojilojilojilojilojilojilojilojilZfilojilojilZcK4pWa4paI4paI4pWXIOKWiOKWiOKVlOKVneKWiOKWiOKVlOKVkOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKVkSAgIOKWiOKWiOKVkSAgICDilojilojilZTilZDilZDilZDilZDilZ3ilojilojilZTilZDilZDilojilojilZfilojilojilZEgICDilojilojilZHilojilojilZTilZDilZDilZDilZDilZ3ilojilojilZTilZDilZDilojilojilZcgICAg4paI4paI4pWR4pWa4pWQ4pWQ4paI4paI4pWU4pWQ4pWQ4pWd4paI4paI4pWRCiDilZrilojilojilojilojilZTilZ0g4paI4paI4pWRICAg4paI4paI4pWR4paI4paI4pWRICAg4paI4paI4pWRICAgIOKWiOKWiOKWiOKWiOKWiOKWiOKWiOKVl+KWiOKWiOKWiOKWiOKWiOKWiOKWiOKVkeKWiOKWiOKVkSAgIOKWiOKWiOKVkeKWiOKWiOKWiOKWiOKWiOKVlyAg4paI4paI4pWRICDilojilojilZEgICAg4paI4paI4pWRICAg4paI4paI4pWRICAg4paI4paI4pWRCiAg4pWa4paI4paI4pWU4pWdICDilojilojilZEgICDilojilojilZHilojilojilZEgICDilojilojilZEgICAg4pWa4pWQ4pWQ4pWQ4pWQ4paI4paI4pWR4paI4paI4pWU4pWQ4pWQ4paI4paI4pWR4pWa4paI4paI4pWXIOKWiOKWiOKVlOKVneKWiOKWiOKVlOKVkOKVkOKVnSAg4paI4paI4pWRICDilojilojilZEgICAg4paI4paI4pWRICAg4paI4paI4pWRICAg4pWa4pWQ4pWdCiAgIOKWiOKWiOKVkSAgIOKVmuKWiOKWiOKWiOKWiOKWiOKWiOKVlOKVneKVmuKWiOKWiOKWiOKWiOKWiOKWiOKVlOKVnSAgICDilojilojilojilojilojilojilojilZHilojilojilZEgIOKWiOKWiOKVkSDilZrilojilojilojilojilZTilZ0g4paI4paI4paI4paI4paI4paI4paI4pWX4paI4paI4paI4paI4paI4paI4pWU4pWdICAgIOKWiOKWiOKVkSAgIOKWiOKWiOKVkSAgIOKWiOKWiOKVlwogICDilZrilZDilZ0gICAg4pWa4pWQ4pWQ4pWQ4pWQ4pWQ4pWdICDilZrilZDilZDilZDilZDilZDilZ0gICAgIOKVmuKVkOKVkOKVkOKVkOKVkOKVkOKVneKVmuKVkOKVnSAg4pWa4pWQ4pWdICDilZrilZDilZDilZDilZ0gIOKVmuKVkOKVkOKVkOKVkOKVkOKVkOKVneKVmuKVkOKVkOKVkOKVkOKVkOKVnSAgICAg4pWa4pWQ4pWdICAg4pWa4pWQ4pWdICAg4pWa4pWQ4pWdCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAK";
-    private static string _path = "./IED.conf";
-    public static bool IEDGame(string borderColor)
+// ==============================================================
+// ===============  SPECTRE IED GAME – FULLSCREEN ===============
+// ==============================================================
+
+public class IEDGameSystem
+{
+    private static int _bombTime = 900;   // seconds
+    private static string _armCode = "1234";
+    private static string _defuseCode = "9999";
+
+    private static string _currentInput = "";
+    private static bool _armed = false;
+
+    private static bool _freezing = false;
+    private static int _freezeLeft = 25;
+
+    private static readonly string _path = "./IED.conf";
+    private static readonly string _logFile = "game_log.txt";
+
+    private static readonly string _exploded = "<YOUR BASE64>";
+    private static readonly string _saved = "<YOUR BASE64>";
+
+    // ==========================================================
+    // =============== FULLSCREEN WRAPPER (IMPORTANT) ===========
+    // ==========================================================
+
+    private static Layout WrapFullscreen(IRenderable content)
     {
-        int totalSeconds = _decentralizationTime;
-        int current = 0;
-
-        while (true)
-        {
-        // Progress bar string (15 characters) – escape markup brackets.
-        int maxBarLength = Math.Max(Console.WindowWidth - 20, 10);
-        int filledLength = (int)((double)current / totalSeconds * maxBarLength);
-        string bar = new string('█', filledLength) + new string('─', maxBarLength - filledLength);
-        string barMarkup = $"          [[{bar}]] {current:D2}/{totalSeconds:D2}";
-
-        var content = new RowsRenderable(
-            new Align(new Markup("Remaining time before IED explodes: \n"), HorizontalAlignment.Center),
-            new Align(new Markup(barMarkup), HorizontalAlignment.Center)
-        );
-
-        var popup = new Panel(content)
-            .Header("")
+        // Invisible border
+        var panel = new Panel(content)
             .Border(BoxBorder.None)
-            .BorderStyle(Style.Parse(borderColor));
+            .Padding(0, 0)
+            .Expand();
 
-        AnsiConsole.Clear();
-        // Display as a popup centered on the screen.
-        AnsiConsole.Write(new Align(popup, HorizontalAlignment.Center, VerticalAlignment.Middle));
+        var layout = new Layout("root")
+            .SplitRows(
+                new Layout("content").Update(panel).Ratio(1)
+            );
 
-        // Handle completion or cancellation.
-        if (current == totalSeconds)
-            break;
+        return layout;
+    }
 
-        Thread.Sleep(1000);
-        // Check if value in _path is equal to "IED enabled"
-        if (File.Exists(_path))
-        {
-            string fileContent = File.ReadAllText(_path);
-            if (!fileContent.Contains("IED enabled"))
+    public static void SetCodes(string arm, string defuse)
+    {
+        if (!string.IsNullOrEmpty(arm))
+            _armCode = arm;
+        if (!string.IsNullOrEmpty(defuse))
+            _defuseCode = defuse;
+    }
+
+    // ==============================================================
+    // ==================== MAIN ENTRY ==============================
+    // ==============================================================
+
+    public static async Task<bool> StartGame(string borderColor)
+    {
+        _currentInput = "";
+        _armed = false;
+        _freezing = false;
+        _freezeLeft = 25;
+
+        await RunArmingScreen(borderColor);
+        _currentInput = "";
+        return await RunCountdown(borderColor);
+    }
+
+    // ==============================================================
+    // ==================== ARMING SCREEN ===========================
+    // ==============================================================
+
+    private static async Task RunArmingScreen(string color)
+    {
+        var panel = BuildArmingPanel(color);
+
+        await AnsiConsole.Live(WrapFullscreen(panel))
+            .AutoClear(false)
+            .StartAsync(async ctx =>
             {
-                // If the file contains "IED enabled", break the loop.
-                return true;
+                while (!_armed)
+                {
+                    HandleArmingInput();
+
+                    panel = BuildArmingPanel(color);
+                    ctx.UpdateTarget(WrapFullscreen(panel));
+
+                    await Task.Delay(50);
+                }
+            });
+    }
+
+    private static void HandleArmingInput()
+    {
+        while (Console.KeyAvailable)
+        {
+            var key = Console.ReadKey(true);
+
+            if (key.Key == ConsoleKey.Enter)
+            {
+                if (_currentInput == _armCode)
+                    _armed = true;
+
+                _currentInput = "";
+            }
+            else if (key.Key == ConsoleKey.Backspace)
+            {
+                if (_currentInput.Length > 0)
+                    _currentInput = _currentInput[..^1];
+            }
+            else if (!char.IsControl(key.KeyChar))
+            {
+                _currentInput += key.KeyChar;
             }
         }
-        current++;
-        }
-        Console.Clear();
-        return false;
     }
 
-    // Helper renderable that stacks items vertically.
-    public sealed class RowsRenderable : IRenderable
+    private static Panel BuildArmingPanel(string color)
     {
-        private readonly IRenderable[] _rows;
-        public RowsRenderable(params IRenderable[] rows) => _rows = rows;
+        return new Panel(
+            new RowsRenderable(
+                new Align(new Markup("[bold red]IED PREPARATION[/]"), HorizontalAlignment.Center),
+                new Align(new Markup("Enter arming code to start the device:\n"), HorizontalAlignment.Center),
+                new Align(new Markup($"Code: [yellow]{_currentInput}[/]"), HorizontalAlignment.Center),
+                new Align(new Markup("[grey](Press Enter to confirm)[/]"), HorizontalAlignment.Center)
+            )
+        )
+        .Border(BoxBorder.None)
+        .Padding(1, 1)
+        .Expand();
+    }
 
-        public Measurement Measure(RenderOptions options, int maxWidth) =>
-            new Measurement(0, maxWidth);
+    // ==============================================================
+    // ====================== COUNTDOWN =============================
+    // ==============================================================
 
-        public IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
+    private static async Task<bool> RunCountdown(string color)
+    {
+        int current = 0;
+        int bombMs = 0;
+        int freezeMs = 0;
+
+        var panel = BuildCountdownPanel(current, color);
+
+        return await AnsiConsole.Live(WrapFullscreen(panel))
+            .AutoClear(false)
+            .StartAsync(async ctx =>
+            {
+                while (true)
+                {
+                    await Task.Delay(50);
+                    HandleCountdownInput();
+
+                    if (_freezing)
+                    {
+                        freezeMs += 50;
+                        if (freezeMs >= 1000)
+                        {
+                            freezeMs = 0;
+                            _freezeLeft--;
+                            if (_freezeLeft <= 0)
+                                return true;
+                        }
+                    }
+                    else
+                    {
+                        bombMs += 50;
+                        if (bombMs >= 1000)
+                        {
+                            bombMs = 0;
+                            current++;
+
+                            if (current >= _bombTime)
+                                return false;
+
+                            if (File.Exists(_path))
+                            {
+                                var content = File.ReadAllText(_path);
+                                if (!content.Contains("IED enabled", StringComparison.OrdinalIgnoreCase))
+                                    return true;
+                            }
+                        }
+                    }
+
+                    panel = BuildCountdownPanel(current, color);
+                    ctx.UpdateTarget(WrapFullscreen(panel));
+                }
+            });
+    }
+
+    private static void HandleCountdownInput()
+    {
+        while (Console.KeyAvailable)
         {
-            foreach (var row in _rows)
-                foreach (var seg in row.Render(options, maxWidth))
-                    yield return seg;
+            var key = Console.ReadKey(true);
+
+            if (_freezing)
+            {
+                if (key.Key == ConsoleKey.Spacebar)
+                {
+                    _freezing = false;
+                    _freezeLeft = 25;
+                    _currentInput = "";
+                }
+                continue;
+            }
+
+            if (key.Key == ConsoleKey.Enter)
+            {
+                if (_currentInput == _defuseCode)
+                {
+                    _freezing = true;
+                    _freezeLeft = 25;
+                }
+                _currentInput = "";
+            }
+            else if (key.Key == ConsoleKey.Backspace)
+            {
+                if (_currentInput.Length > 0)
+                    _currentInput = _currentInput[..^1];
+            }
+            else if (!char.IsControl(key.KeyChar))
+            {
+                _currentInput += key.KeyChar;
+            }
         }
     }
 
-    public static void WriteGameLog(string path, bool exploded){
-        // Create a new log entry
-        string logEntry = $"{DateTime.Now}: Game Over! {(exploded ? "Exploded" : "Saved")}\n";
-        // Append the log entry to the file
-        File.AppendAllText(path, logEntry);
-        // Print the log entry to the console
-        Console.WriteLine(logEntry);
+    private static Panel BuildCountdownPanel(int current, string color)
+    {
+        // Fixed, safe width (never overflows)
+        int barWidth = Math.Max(10, Math.Min(Console.WindowWidth - 20, 80));
+
+        double progress = (double)current / _bombTime;
+        progress = Math.Clamp(progress, 0.0, 1.0);
+
+        int filled = (int)(progress * barWidth);
+        string bar = new string('█', filled) + new string('─', barWidth - filled);
+
+        string status = _freezing
+            ? $"[green]DEFUSING... {_freezeLeft}s remaining (SPACE to cancel)[/]"
+            : "[red]Bomb ticking...[/]";
+
+        return new Panel(
+            new RowsRenderable(
+                new Align(new Markup("[bold red]IMPROVISED EXPLOSIVE DEVICE[/]"), HorizontalAlignment.Center),
+                new Align(new Markup(status), HorizontalAlignment.Center),
+                new Markup(""),
+                new Align(new Markup($"[[{bar}]]  {current:D3}/{_bombTime:D3} s"), HorizontalAlignment.Center),
+                new Markup(""),
+                new Align(new Markup($"Enter code: [yellow]{_currentInput}[/]"), HorizontalAlignment.Center),
+                new Align(new Markup("[grey](Press Enter to submit code)[/]"), HorizontalAlignment.Center)
+            )
+        )
+        .Border(BoxBorder.None)
+        .Padding(1, 1)
+        .Expand();
     }
 
+    // ==============================================================
+    // ====================== END SCREEN ============================
+    // ==============================================================
 
-    public static void EndGame(bool exploded){
-        // Create new layout and display the final screen
-        // Render also finalScreen from base64
+    public static void ShowEnd(bool defused)
+    {
+        string base64 = defused ? _saved : _exploded;
+        string message;
 
-        string finalMessage = "";
-        if (!exploded)
+        try
         {
-            // from base64 convert _exploded to string
-            finalMessage = Encoding.UTF8.GetString(Convert.FromBase64String(_exploded));
+            message = Encoding.UTF8.GetString(Convert.FromBase64String(base64));
         }
-        else
+        catch
         {
-            finalMessage = Encoding.UTF8.GetString(Convert.FromBase64String(_saved));
+            message = defused ? "IED has been successfully defused!" : "IED exploded!";
         }
-        
-        int padLines = Math.Max(0, Console.WindowHeight - 27);
-        RowsRenderable rows = new RowsRenderable(
-            new Align(new Markup(finalMessage), HorizontalAlignment.Center),
-            new Align(new Markup("Press [green]Enter[/] to exit"), HorizontalAlignment.Center)
-        );
-        var popup = new Panel(rows)
-            .Header("[bold]GAME OVER[/]")
-            .Border(BoxBorder.Rounded)
-            .BorderStyle(Style.Parse("yellow"))
-            .Expand();
+
+        var panel = new Panel(
+            new RowsRenderable(
+                new Align(new Markup(message), HorizontalAlignment.Center),
+                new Markup(""),
+                new Align(new Markup("[green]Press ENTER to exit[/]"), HorizontalAlignment.Center)
+            )
+        )
+        .Border(BoxBorder.None)
+        .Padding(1, 1)
+        .Expand();
+
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Align(popup, HorizontalAlignment.Center, VerticalAlignment.Middle));
+        AnsiConsole.Write(WrapFullscreen(panel));
+
         while (Console.ReadKey(true).Key != ConsoleKey.Enter) { }
-        AnsiConsole.Clear();
-        Console.CursorVisible = true;
-        WriteGameLog("game_log.txt", exploded);
-        Process.GetCurrentProcess().Kill();
-    }
-    
 
+        File.AppendAllText(_logFile,
+            $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Game Over! {(defused ? "Saved" : "Exploded")}\n");
+
+        Console.CursorVisible = true;
+    }
 }
+
+// ==============================================================
+// ======================= PROGRAM MAIN ==========================
+// ==============================================================
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
-        // ── Prevent Ctrl+C / Ctrl+Break from killing us ──
-        Console.TreatControlCAsInput = true; 
-        Console.CancelKeyPress += (sender, e) =>
-        {
-            // swallow the event and do nothing
-            e.Cancel = true;
-        };
+        Console.TreatControlCAsInput = true;
+        Console.CancelKeyPress += (sender, e) => e.Cancel = true;
 
-        // Now your game loop will never be aborted by Ctrl+C (SIGINT)
-        // or Ctrl+Break; they’ll just arrive as input that you ignore.
-        
-        string borderColor = "red";
-        bool result = SpectreUI.IEDGame(borderColor);
-        SpectreUI.EndGame(result);
+        string armCode = null;
+        string defuseCode = null;
+
+        foreach (var a in args)
+        {
+            if (a.StartsWith("--arm-code="))
+                armCode = a.Substring("--arm-code=".Length);
+            else if (a.StartsWith("--defuse-code="))
+                defuseCode = a.Substring("--defuse-code=".Length);
+        }
+
+        IEDGameSystem.SetCodes(armCode, defuseCode);
+
+        bool defused = await IEDGameSystem.StartGame("red");
+        IEDGameSystem.ShowEnd(defused);
+
+        Process.GetCurrentProcess().Kill();
+    }
+}
+
+// ==============================================================
+// =============== UTILITY – ROWS RENDERABLE ====================
+// ==============================================================
+
+public sealed class RowsRenderable : IRenderable
+{
+    private readonly IRenderable[] _rows;
+
+    public RowsRenderable(params IRenderable[] rows)
+    {
+        _rows = rows;
+    }
+
+    public Measurement Measure(RenderOptions options, int maxWidth)
+        => new Measurement(0, maxWidth);
+
+    public IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
+    {
+        foreach (var row in _rows)
+            foreach (var segment in row.Render(options, maxWidth))
+                yield return segment;
     }
 }
